@@ -1,5 +1,6 @@
 package com.example.BarangayServices.services;
 
+import com.example.BarangayServices.enums.Collections;
 import com.example.BarangayServices.models.Log;
 import com.example.BarangayServices.models.RFID;
 import com.example.BarangayServices.models.Resident;
@@ -17,42 +18,38 @@ import java.util.concurrent.ExecutionException;
 
 @Service
 public class FirebaseService {
-    private static final String COLLECTION_BARANGAY = "Barangays";
-    private static final String COLLECTION_RESIDENT = "Residents";
-    private static final String COLLECTION_RFID = "RFIDs";
-    private static final String COLLECTION_LOGS = "Logs";
 
     //returns admin database reference
     private @NotNull DocumentReference getAdminReference(String barangay, String userRFID){
-        return FirestoreClient.getFirestore().collection(COLLECTION_BARANGAY)
-                .document(barangay).collection(COLLECTION_RESIDENT).document(userRFID);
+        return FirestoreClient.getFirestore().collection(Collections.Barangays.name())
+                .document(barangay).collection(Collections.Residents.name()).document(userRFID);
     }
 
     //returns database login reference
     private @NotNull DocumentReference getRFIDReference(String userRFID){
-        return FirestoreClient.getFirestore().collection(COLLECTION_RFID).document(userRFID);
+        return FirestoreClient.getFirestore().collection(Collections.RFIDs.name()).document(userRFID);
     }
 
     private Iterable<DocumentReference> getResidentsReference(String barangay){
-        return FirestoreClient.getFirestore().collection(COLLECTION_BARANGAY)
-                .document(barangay).collection(COLLECTION_RESIDENT).listDocuments();
+        return FirestoreClient.getFirestore().collection(Collections.Barangays.name())
+                .document(barangay).collection(Collections.Residents.name()).listDocuments();
     }
 
     private CollectionReference getResidentCollectionReference(String barangay){
-        return FirestoreClient.getFirestore().collection(COLLECTION_BARANGAY)
-                .document(barangay).collection(COLLECTION_RESIDENT);
+        return FirestoreClient.getFirestore().collection(Collections.Barangays.name())
+                .document(barangay).collection(Collections.Residents.name());
     }
 
     private Iterable<DocumentReference> getLogsReference(String barangay){
-        return FirestoreClient.getFirestore().collection(COLLECTION_BARANGAY)
-                .document(barangay).collection(COLLECTION_LOGS).listDocuments();
+        return FirestoreClient.getFirestore().collection(Collections.Barangays.name())
+                .document(barangay).collection(Collections.Logs.name()).listDocuments();
     }
 
     private @NotNull DocumentReference getLogReference(String barangay, long timestamp){
         return FirestoreClient.getFirestore()
-                .collection(COLLECTION_BARANGAY)
+                .collection(Collections.Barangays.name())
                 .document(barangay)
-                .collection(COLLECTION_LOGS)
+                .collection(Collections.Logs.name())
                 .document(String.valueOf(timestamp));
     }
 
@@ -151,32 +148,32 @@ public class FirebaseService {
 
     public String addResident(String barangay, String userRFID, Resident resident) throws ExecutionException, InterruptedException {
         ApiFuture<WriteResult> result = getAdminReference(barangay, userRFID).set(resident);
-        return "Update time : " + result.get().getUpdateTime().toString();
+        return "Update time : " + result.get().getUpdateTime();
     }
 
     public String addLoginCreds(String userRFID, RFID rfid)
             throws ExecutionException, InterruptedException {
         ApiFuture<WriteResult> result = getRFIDReference(userRFID).set(rfid);
-        return "Update time : " + result.get().getUpdateTime().toString();
+        return "Update time : " + result.get().getUpdateTime();
     }
 
     public String addLog(String barangay, Log log)
             throws ExecutionException, InterruptedException {
         ApiFuture<WriteResult> result =
                 getLogReference(barangay, log.getTimestamp()).set(log);
-        return "Update time : " + result.get().getUpdateTime().toString();
+        return "Update time : " + result.get().getUpdateTime();
     }
 
     public String updateResident(String barangay, String userRFID, Resident resident)
             throws ExecutionException, InterruptedException {
         ApiFuture<WriteResult> result = getAdminReference(barangay, userRFID).set(resident);
-        return "Update time : " + result.get().getUpdateTime().toString();
+        return "Update time : " + result.get().getUpdateTime();
     }
 
     public String updateLoginCreds(String userRFID, RFID rfid)
             throws ExecutionException, InterruptedException {
         ApiFuture<WriteResult> result = getRFIDReference(userRFID).set(rfid);
-        return "Update time : " + result.get().getUpdateTime().toString();
+        return "Update time : " + result.get().getUpdateTime();
     }
 
     public String deleteResident(String barangay, String userRFID) {
