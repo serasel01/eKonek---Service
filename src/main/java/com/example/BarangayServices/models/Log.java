@@ -3,6 +3,7 @@ package com.example.BarangayServices.models;
 public class Log {
     private String adminRFID, residentRFID, adminName, residentName, event;
     private long timestamp;
+    private String dateTime;
 
     public String getAdminName() {
         return adminName;
@@ -50,5 +51,13 @@ public class Log {
 
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public String getDateTime() {
+        return dateTime;
+    }
+
+    public void setDateTime(String dateTime) {
+        this.dateTime = dateTime;
     }
 }

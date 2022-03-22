@@ -1,5 +1,6 @@
 package com.example.BarangayServices.controllers;
 
+import com.example.BarangayServices.models.Case;
 import com.example.BarangayServices.models.Log;
 import com.example.BarangayServices.models.RFID;
 import com.example.BarangayServices.models.Resident;
@@ -18,7 +19,8 @@ public class FirebaseController {
     private FirebaseService firebaseService;
 
     @GetMapping("/Barangays/{barangay}/Residents/{userRFID}")
-    public Resident getResident(@PathVariable String barangay, @PathVariable String userRFID)
+    public Resident getResident(@PathVariable String barangay,
+                                @PathVariable String userRFID)
             throws ExecutionException, InterruptedException {
         return firebaseService.getResident(barangay, userRFID);
     }
@@ -43,9 +45,18 @@ public class FirebaseController {
 
     @PostMapping("/Barangays/{barangay}/Residents")
     public List<Resident> searchResidents(@PathVariable String barangay,
-                                       @RequestParam String param)
+                                          @RequestParam String parameterType,
+                                          @RequestParam String parameterEntry)
             throws ExecutionException, InterruptedException {
-        return firebaseService.searchResidents(barangay, param);
+        return firebaseService.searchResidents(barangay, parameterType, parameterEntry);
+    }
+
+    @PostMapping("/Barangays/{barangay}/Logs")
+    public List<Log> getLogs(@PathVariable String barangay,
+                                  @RequestParam String parameterType,
+                                  @RequestParam String parameterEntry)
+            throws ExecutionException, InterruptedException {
+        return firebaseService.getLogs(barangay, parameterType, parameterEntry);
     }
 
     @PostMapping("/Barangays/{barangay}/Residents/{userRFID}")
@@ -91,6 +102,22 @@ public class FirebaseController {
     public String deleteAdminCreds(@PathVariable String userRFID)
             throws ExecutionException, InterruptedException {
         return firebaseService.deleteAdminCreds(userRFID);
+    }
+
+    @GetMapping("/Barangays/{barangay}/Residents/{userRFID}/Cases")
+    public List<Case> getCases(@PathVariable String barangay,
+                                  @PathVariable String userRFID)
+            throws ExecutionException, InterruptedException {
+        return firebaseService.getCases(barangay, userRFID);
+    }
+
+    @PostMapping("/Barangays/{barangay}/Residents/{userRFID}/Cases/{caseId}")
+    public String addCase(@PathVariable String barangay,
+                         @PathVariable String userRFID,
+                         @PathVariable String caseId,
+                         @RequestBody Case caseItem)
+            throws  ExecutionException, InterruptedException {
+        return firebaseService.addCase(barangay, userRFID, caseId, caseItem);
     }
 
 }

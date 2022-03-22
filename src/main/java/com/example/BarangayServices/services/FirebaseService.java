@@ -1,6 +1,8 @@
 package com.example.BarangayServices.services;
 
-import com.example.BarangayServices.enums.Collections;
+import com.example.BarangayServices.enums.Collection;
+import com.example.BarangayServices.enums.ParameterType;
+import com.example.BarangayServices.models.Case;
 import com.example.BarangayServices.models.Log;
 import com.example.BarangayServices.models.RFID;
 import com.example.BarangayServices.models.Resident;
@@ -20,37 +22,64 @@ import java.util.concurrent.ExecutionException;
 public class FirebaseService {
 
     //returns admin database reference
-    private @NotNull DocumentReference getAdminReference(String barangay, String userRFID){
-        return FirestoreClient.getFirestore().collection(Collections.Barangays.name())
-                .document(barangay).collection(Collections.Residents.name()).document(userRFID);
+    private @NotNull DocumentReference getAdminReference(String barangay,
+                                                         String userRFID){
+        return FirestoreClient.getFirestore()
+                .collection(Collection.Barangays.name())
+                .document(barangay)
+                .collection(Collection.Residents.name())
+                .document(userRFID);
     }
 
     //returns database login reference
     private @NotNull DocumentReference getRFIDReference(String userRFID){
-        return FirestoreClient.getFirestore().collection(Collections.RFIDs.name()).document(userRFID);
+        return FirestoreClient.getFirestore().collection(Collection.RFIDs.name()).document(userRFID);
     }
 
     private Iterable<DocumentReference> getResidentsReference(String barangay){
-        return FirestoreClient.getFirestore().collection(Collections.Barangays.name())
-                .document(barangay).collection(Collections.Residents.name()).listDocuments();
+        return FirestoreClient.getFirestore().collection(Collection.Barangays.name())
+                .document(barangay).collection(Collection.Residents.name()).listDocuments();
     }
 
     private CollectionReference getResidentCollectionReference(String barangay){
-        return FirestoreClient.getFirestore().collection(Collections.Barangays.name())
-                .document(barangay).collection(Collections.Residents.name());
+        return FirestoreClient.getFirestore().collection(Collection.Barangays.name())
+                .document(barangay).collection(Collection.Residents.name());
+    }
+
+    private CollectionReference getLogCollectionReference(String barangay){
+        return FirestoreClient.getFirestore().collection(Collection.Barangays.name())
+                .document(barangay).collection(Collection.Logs.name());
     }
 
     private Iterable<DocumentReference> getLogsReference(String barangay){
-        return FirestoreClient.getFirestore().collection(Collections.Barangays.name())
-                .document(barangay).collection(Collections.Logs.name()).listDocuments();
+        return FirestoreClient.getFirestore().collection(Collection.Barangays.name())
+                .document(barangay).collection(Collection.Logs.name()).listDocuments();
     }
 
     private @NotNull DocumentReference getLogReference(String barangay, long timestamp){
         return FirestoreClient.getFirestore()
-                .collection(Collections.Barangays.name())
+                .collection(Collection.Barangays.name())
                 .document(barangay)
-                .collection(Collections.Logs.name())
+                .collection(Collection.Logs.name())
                 .document(String.valueOf(timestamp));
+    }
+
+    private Iterable<DocumentReference> getCasesReference(String barangay, String userRFID){
+        return FirestoreClient.getFirestore().collection(Collection.Barangays.name())
+                .document(barangay).collection(Collection.Residents.name())
+                .document(userRFID).collection(Collection.Cases.name()).listDocuments();
+    }
+
+    private @NotNull DocumentReference getCaseReference(String barangay,
+                                                        String userRFID,
+                                                        String caseId){
+        return FirestoreClient.getFirestore()
+                .collection(Collection.Barangays.name())
+                .document(barangay)
+                .collection(Collection.Residents.name())
+                .document(userRFID)
+                .collection(Collection.Cases.name())
+                .document(caseId);
     }
 
     //returns admin details for login
@@ -99,29 +128,36 @@ public class FirebaseService {
         return residentList;
     }
 
-    public List<Resident> searchResidents(String barangay, String param)
+    public List<Resident> searchResidents(String barangay,
+                                          String parameterType,
+                                          String parameterEntry)
             throws ExecutionException, InterruptedException {
 
         Query query;
         List<Resident> residentList = new ArrayList<>();
+        String begin, end;
 
-        //condition if RFID is the parameter passed
-        if (Character.isDigit(param.charAt(1))){
-            query = getResidentCollectionReference(barangay)
-                    .whereEqualTo("userRFID", param);
-        }
+        switch (ParameterType.valueOf(parameterType)){
+            case ResidentRFID:
+                    query = getResidentCollectionReference(barangay)
+                            .whereEqualTo("userRFID", parameterEntry);
+                    break;
 
-        //condition if surname is the parameter passed
-        else {
-            String begin = param.substring(0, param.length()-1);
-            String end = param.substring(param.length()-1, param.length());
+            case ResidentName:
+                begin = parameterEntry.substring(0, parameterEntry.length()-1);
+                end = parameterEntry.substring(parameterEntry.length()-1);
 
-            query = getResidentCollectionReference(barangay)
-                    .whereGreaterThanOrEqualTo("lastName", param)
-                    .whereLessThan("lastName",
-                            begin + Character.toString(
-                                    (int) end.charAt(0) + 1)
-                    );
+                query = getResidentCollectionReference(barangay)
+                        .whereGreaterThanOrEqualTo("lastName", parameterEntry)
+                        .whereLessThan("lastName",
+                                begin + Character.toString(
+                                        (int) end.charAt(0) + 1)
+                            );
+                    break;
+
+            default:
+                query = getResidentCollectionReference(barangay);
+                break;
         }
 
         // retrieve  query results asynchronously using query.get()
@@ -132,6 +168,78 @@ public class FirebaseService {
         }
 
         return residentList;
+    }
+
+    public List<Log> getLogs(String barangay,
+                             String parameterType,
+                             String parameterEntry)
+            throws ExecutionException, InterruptedException {
+
+        Query query;
+        List<Log> logList = new ArrayList<>();
+        String begin, end;
+
+        switch (ParameterType.valueOf(parameterType)){
+            case ResidentRFID:
+                    query = getLogCollectionReference(barangay)
+                            .whereEqualTo("residentRFID", parameterEntry);
+                    break;
+
+            case AdminRFID:
+                    query = getLogCollectionReference(barangay)
+                            .whereEqualTo("adminRFID", parameterEntry);
+                    break;
+
+            case Event:
+                    query = getLogCollectionReference(barangay)
+                            .whereEqualTo("event", parameterEntry);
+                    break;
+
+            case ResidentName:
+                begin = parameterEntry.substring(0, parameterEntry.length()-1);
+                end = parameterEntry.substring(parameterEntry.length()-1);
+
+                query = getLogCollectionReference(barangay)
+                        .whereGreaterThanOrEqualTo("residentName", parameterEntry)
+                        .whereLessThan("residentName",
+                                begin + Character.toString(
+                                        (int) end.charAt(0) + 1)
+                            );
+                    break;
+
+            case AdminName:
+                begin = parameterEntry.substring(0, parameterEntry.length()-1);
+                end = parameterEntry.substring(parameterEntry.length()-1);
+
+                query = getLogCollectionReference(barangay)
+                        .whereGreaterThanOrEqualTo("adminName", parameterEntry)
+                        .whereLessThan("adminName",
+                                begin + Character.toString(
+                                        (int) end.charAt(0) + 1)
+                        );
+                break;
+
+            case Timestamp:
+                long timestamp = Long.parseLong(parameterEntry);
+
+                query = getLogCollectionReference(barangay)
+                        .whereGreaterThanOrEqualTo("timestamp", timestamp)
+                        .whereLessThan("timestamp", timestamp + 86400000);
+                break;
+
+            default:
+                query = getLogCollectionReference(barangay);
+                break;
+        }
+
+        // retrieve  query results asynchronously using query.get()
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+
+        for (DocumentSnapshot document : querySnapshot.get().getDocuments()) {
+            logList.add(document.toObject(Log.class));
+        }
+
+        return logList;
     }
 
     public List<Log> getLogs(String barangay)
@@ -146,7 +254,22 @@ public class FirebaseService {
         return logList;
     }
 
-    public String addResident(String barangay, String userRFID, Resident resident) throws ExecutionException, InterruptedException {
+    public List<Case> getCases(String barangay, String userRFID) throws ExecutionException, InterruptedException {
+        Iterator<DocumentReference> iterator = getCasesReference(barangay, userRFID).iterator();
+        List<Case> caseList = new ArrayList<>();
+
+        while (iterator.hasNext()){
+            ApiFuture<DocumentSnapshot> future = iterator.next().get();
+            caseList.add(future.get().toObject(Case.class));
+        }
+        return caseList;
+    }
+
+    public String addResident(String barangay,
+                              String userRFID,
+                              Resident resident)
+            throws ExecutionException, InterruptedException {
+
         ApiFuture<WriteResult> result = getAdminReference(barangay, userRFID).set(resident);
         return "Update time : " + result.get().getUpdateTime();
     }
@@ -161,6 +284,16 @@ public class FirebaseService {
             throws ExecutionException, InterruptedException {
         ApiFuture<WriteResult> result =
                 getLogReference(barangay, log.getTimestamp()).set(log);
+        return "Update time : " + result.get().getUpdateTime();
+    }
+
+    public String addCase(String barangay,
+                          String userRFID,
+                          String caseId,
+                          Case caseItem)
+            throws ExecutionException, InterruptedException {
+        ApiFuture<WriteResult> result =
+                getCaseReference(barangay, userRFID, caseId).set(caseItem);
         return "Update time : " + result.get().getUpdateTime();
     }
 
