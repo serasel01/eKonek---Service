@@ -1,33 +1,78 @@
 package com.example.BarangayServices.models;
 
 public class Case {
-    private String caseId;
-    private String caseName;
-    private String dateFilled;
+    private String caseTitle;
+    private String caseNumber;
+    private String dateIssued;
+    private String complaintName;
+    private String address;
     private String description;
+    private String dateHearing;
+    private String timeHearing;
+    private String actionsTaken;
 
-    public String getCaseId() {
-        return caseId;
+    public Case() {
     }
 
-    public void setCaseId(String caseId) {
-        this.caseId = caseId;
+    public Case(String caseTitle,
+                String caseNumber,
+                String dateIssued,
+                String complaintName,
+                String address,
+                String description,
+                String dateHearing,
+                String timeHearing,
+                String actionsTaken) {
+
+        this.caseTitle = caseTitle;
+        this.caseNumber = caseNumber;
+        this.dateIssued = dateIssued;
+        this.complaintName = complaintName;
+        this.address = address;
+        this.description = description;
+        this.dateHearing = dateHearing;
+        this.timeHearing = timeHearing;
+        this.actionsTaken = actionsTaken;
     }
 
-    public String getCaseName() {
-        return caseName;
+    public String getCaseTitle() {
+        return caseTitle;
     }
 
-    public void setCaseName(String caseName) {
-        this.caseName = caseName;
+    public void setCaseTitle(String caseTitle) {
+        this.caseTitle = caseTitle;
     }
 
-    public String getDateFilled() {
-        return dateFilled;
+    public String getCaseNumber() {
+        return caseNumber;
     }
 
-    public void setDateFilled(String dateFilled) {
-        this.dateFilled = dateFilled;
+    public void setCaseNumber(String caseNumber) {
+        this.caseNumber = caseNumber;
+    }
+
+    public String getDateIssued() {
+        return dateIssued;
+    }
+
+    public void setDateIssued(String dateIssued) {
+        this.dateIssued = dateIssued;
+    }
+
+    public String getComplaintName() {
+        return complaintName;
+    }
+
+    public void setComplaintName(String complaintName) {
+        this.complaintName = complaintName;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     public String getDescription() {
@@ -36,5 +81,29 @@ public class Case {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getDateHearing() {
+        return dateHearing;
+    }
+
+    public void setDateHearing(String dateHearing) {
+        this.dateHearing = dateHearing;
+    }
+
+    public String getTimeHearing() {
+        return timeHearing;
+    }
+
+    public void setTimeHearing(String timeHearing) {
+        this.timeHearing = timeHearing;
+    }
+
+    public String getActionsTaken() {
+        return actionsTaken;
+    }
+
+    public void setActionsTaken(String actionsTaken) {
+        this.actionsTaken = actionsTaken;
     }
 }

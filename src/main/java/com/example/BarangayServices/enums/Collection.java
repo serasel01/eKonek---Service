@@ -1,5 +1,12 @@
 package com.example.BarangayServices.enums;
 
 public enum Collection {
-    Barangays, Residents, RFIDs, Logs, Cases
+    Barangays,
+    Residents,
+    RFIDs,
+    Logs,
+    Cases,
+    Officials,
+    Transactions,
+    SystemEvents;
 }
